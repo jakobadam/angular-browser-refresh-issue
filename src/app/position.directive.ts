@@ -1,19 +1,21 @@
-import {Directive, ElementRef, EventEmitter, NgZone, OnInit, Output} from '@angular/core';
-import {auditTime, fromEvent} from "rxjs";
+import { Directive, ElementRef, EventEmitter, NgZone, OnDestroy, OnInit, Output } from '@angular/core';
+import { auditTime, fromEvent, Subject, takeUntil } from 'rxjs';
 
 type Position = 'above' | 'below';
 
 @Directive({
   selector: '[appPosition]'
 })
-export class PositionDirective implements OnInit {
+export class PositionDirective implements OnInit, OnDestroy {
+
+  private destroyed = new Subject<void>();
 
   currentPosition?: Position;
 
   @Output()
   positionChange: EventEmitter<Position> = new EventEmitter<Position>();
 
-  constructor(private elementRef: ElementRef<HTMLElement>, private ngZone: NgZone) {
+  constructor(private elementRef: ElementRef<HTMLElement>) {
   }
 
   ngOnInit() {
@@ -22,25 +24,37 @@ export class PositionDirective implements OnInit {
     this.listenForPositionChange();
   }
 
+  ngOnDestroy(): void {
+    this.destroyed.next();
+    this.destroyed.complete();
+  }
+
   listenForPositionChange() {
-    this.ngZone.runOutsideAngular(() => {
-        return fromEvent(window, 'scroll').subscribe(() => {
-          const newPosition = this.getPosition();
-          if (this.currentPosition != newPosition) {
-            this.currentPosition = newPosition;
-            this.ngZone.run(() => this.positionChange.emit(this.currentPosition));
-          }
-        });
-      }
-    )
+    return fromEvent(window, 'scroll').pipe(takeUntil(this.destroyed)).subscribe(() => {
+      const newPosition = this.getPosition();
+      if (this.currentPosition != newPosition) {
+        this.currentPosition = newPosition;
+        this.positionChange.emit(this.currentPosition);
+      }});
+
+    // this.ngZone.runOutsideAngular(() => {
+    //     return fromEvent(window, 'scroll').subscribe(() => {
+    //       const newPosition = this.getPosition();
+    //       if (this.currentPosition != newPosition) {
+    //         this.currentPosition = newPosition;
+    //         this.ngZone.run(() => this.positionChange.emit(this.currentPosition));
+    //       }
+    //     });
+    //   }
+    // )
 
   }
 
   getPosition() {
-    return getElementPostionRelativeToViewportTop(this.elementRef.nativeElement);
+    return getElementPositionRelativeToViewportTop(this.elementRef.nativeElement);
   }
 }
 
-function getElementPostionRelativeToViewportTop(element: HTMLElement) {
+function getElementPositionRelativeToViewportTop(element: HTMLElement) {
   return element.getBoundingClientRect().y > 0 ? 'below' : 'above';
 }

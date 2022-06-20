@@ -1,4 +1,15 @@
-.viewpoort-row {
+body {
+  margin:0;
+}
+.viewport-row {
   height: 100vh;
   border: blue 1px solid;
+}
+
+.fixed-header {
+  position: fixed;
+  top: 0;
+  height: 3rem;
+  width: 100%;
+  background-color: green;
 }

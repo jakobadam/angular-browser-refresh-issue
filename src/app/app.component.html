@@ -1,14 +1,18 @@
-<pre>fixed = {{fixed}}</pre>
-<header *ngIf="fixed">
-  fixed header stuff
+<h2>Example: Show a fixed header when top of Row 2 is above top of viewport</h2>
+
+<header *ngIf="fixed" class="fixed-header">
+  my fixed header
 </header>
-<div class="viewpoort-row">
+<div class="viewport-row">
+  <h2>Row 1</h2>
   <pre>fixed = {{fixed}}</pre>
 </div>
-<div class="viewpoort-row" appPosition (positionChange)="fixed = $event === 'above'">
-  <p>Show fixed header when this element goes above top of viewport</p>
+<div class="viewport-row" appPosition (positionChange)="fixed = $event === 'above'">
+  <h2>Row 2</h2>
+  <p>Should show fixed header when this element goes above top of viewport</p>
   <pre>fixed = {{fixed}}</pre>
 </div>
-<div class="viewpoort-row">
+<div class="viewport-row">
+  <h2>Row 3</h2>
   <pre>fixed = {{fixed}}</pre>
 </div>
